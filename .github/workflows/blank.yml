@@ -1,0 +1,34 @@
+# ===============================
+# GitHub Actions Workflow Example
+# Автор: Дмитрий Кузнецов
+# Назначение: Демонстрация двух задач (тест и деплой)
+# ===============================
+
+name: My-GitHubActions-Basics
+
+on:
+  # Запуск при push в ветку master
+  push:
+    branches:
+      - master
+
+  # Возможность ручного запуска из вкладки Actions
+  workflow_dispatch:
+
+jobs:
+  # --- Первая задача: тестирование ---
+  my_testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Print Hello Message
+        run: echo "Hello World from Testing job"
+
+      # Пример: здесь можно запускать тесты
+      # - name: Run tests
+      #   run: pytest
+
+  # --- Вторая задача: деплой ---
+  my
