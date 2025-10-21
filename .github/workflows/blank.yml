@@ -1,50 +1,18 @@
-# ===============================
-# GitHub Actions Workflow Example
-# Автор: Дмитрий Кузнецов
-# Назначение: Демонстрация двух задач (тест и деплой)
-# ===============================
-
-name: My-GitHubActions-Basics
-
 on:
   push:
     branches:
       - master
-  workflow_dispatch:
 
 jobs:
-  # --- Первая задача: тестирование ---
   my_testing:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Print Hello Message
         run: echo "Hello World from Testing job"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run tests
-        run: pytest
-
-  # --- Вторая задача: деплой ---
   my_deploy:
     runs-on: ubuntu-latest
-    needs: my_testing
+    needs: [my_testing]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Print Deploy Message
-        run: echo "Starting Deployment..."
-
-      - name: Deploy Application
-        run: |
-          echo "Deploying application..."
+      - name: Print Hello Message
+        run: echo "Hello World from Deploy job"
