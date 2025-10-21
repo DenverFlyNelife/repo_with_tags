@@ -7,12 +7,9 @@
 name: My-GitHubActions-Basics
 
 on:
-  # Запуск при push в ветку master
   push:
     branches:
       - master
-
-  # Возможность ручного запуска из вкладки Actions
   workflow_dispatch:
 
 jobs:
@@ -26,9 +23,28 @@ jobs:
       - name: Print Hello Message
         run: echo "Hello World from Testing job"
 
-      # Пример: здесь можно запускать тесты
-      # - name: Run tests
-      #   run: pytest
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest
 
   # --- Вторая задача: деплой ---
-  my
+  my_deploy:
+    runs-on: ubuntu-latest
+    needs: my_testing
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Print Deploy Message
+        run: echo "Starting Deployment..."
+
+      - name: Deploy Application
+        run: |
+          echo "Deploying application..."
