@@ -28,8 +28,8 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "tb-internet-dmz",
             "zIndex": -2,
+            "id": "tb-internet-dmz",
             "data": {
               "type": "tm.BoundaryBox",
               "name": "Граница: Интернет / DMZ (публичная сеть)",
@@ -37,7 +37,13 @@
               "isTrustBoundary": true,
               "hasOpenThreats": false,
               "crossingFlows": [],
-              "containedElements": []
+              "containedElements": [
+                "tb-internal-data",
+                "process-api",
+                "store-postgres",
+                "store-redis",
+                "actor-user"
+              ]
             }
           },
           {
@@ -51,75 +57,21 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "tb-internal-data",
             "zIndex": -1,
+            "id": "tb-internal-data",
             "data": {
               "type": "tm.BoundaryBox",
               "name": "Граница: Внутренняя сеть (data tier)",
               "description": "Граница между backend API и хранилищами данных (PostgreSQL, Redis) внутри docker-сети.",
               "isTrustBoundary": true,
               "hasOpenThreats": false,
-              "crossingFlows": [],
-              "containedElements": []
-            }
-          },
-          {
-            "position": {
-              "x": 160,
-              "y": 460
-            },
-            "size": {
-              "width": 112,
-              "height": 60
-            },
-            "attrs": {
-              "body": {
-                "stroke": "#333333",
-                "strokeWidth": 1.5,
-                "strokeDasharray": null
-              }
-            },
-            "visible": true,
-            "shape": "actor",
-            "id": "actor-user",
-            "zIndex": 3,
-            "data": {
-              "type": "tm.Actor",
-              "name": "Пользователь (клиент банка)",
-              "description": "Аутентифицированный клиент, инициирующий переводы средств и просматривающий историю транзакций через веб/мобильное приложение.",
-              "isTrustBoundary": false,
-              "outOfScope": false,
-              "reasonOutOfScope": "",
-              "hasOpenThreats": true,
-              "providesAuthentication": true,
-              "threats": [
-                {
-                  "id": "thr-01",
-                  "title": "Спуфинг пользователя через кражу/подбор токена сессии",
-                  "type": "Spoofing",
-                  "status": "Open",
-                  "severity": "High",
-                  "description": "Атакующий может выдать себя за легитимного пользователя, если токен сессии/JWT недостаточно защищён (слабая энтропия, отсутствие ротации, хранение в localStorage без httpOnly).",
-                  "mitigation": "Использовать httpOnly/secure cookies или короткоживущие JWT с refresh-токенами, строгую политику CORS, MFA для операций перевода средств."
-                },
-                {
-                  "id": "thr-02",
-                  "title": "Репудиация операции перевода",
-                  "type": "Repudiation",
-                  "status": "Open",
-                  "severity": "Medium",
-                  "description": "Пользователь может отрицать факт инициирования перевода при отсутствии неизменяемого журнала аудита с привязкой к идентификатору сессии и времени.",
-                  "mitigation": "Вести подписанный/защищённый от изменения журнал аудита (append-only) со всеми параметрами операции, IP, user-agent, идентификатором сессии."
-                },
-                {
-                  "id": "thr-03",
-                  "title": "Раскрытие учётных данных при передаче по каналу User -> API",
-                  "type": "Information Disclosure",
-                  "status": "Open",
-                  "severity": "High",
-                  "description": "Если TLS не терминируется корректно перед API (в docker-compose порт 8000 проброшен напрямую без reverse-proxy с TLS), учётные данные и токены могут быть перехвачены (MITM).",
-                  "mitigation": "Обязательное принудительное HTTPS (HSTS), терминация TLS на reverse-proxy/ingress, запрет работы API по HTTP в проде."
-                }
+              "crossingFlows": [
+                "flow-user-api"
+              ],
+              "containedElements": [
+                "process-api",
+                "store-postgres",
+                "store-redis"
               ]
             }
           },
@@ -141,8 +93,90 @@
             },
             "visible": true,
             "shape": "process",
-            "id": "process-api",
             "zIndex": 1,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "9a015b75-fc0f-4296-a16e-6a3ac48801d2"
+                },
+                {
+                  "group": "right",
+                  "id": "0bdc50a0-3fbc-4c1e-847e-ee44a745130e"
+                },
+                {
+                  "group": "bottom",
+                  "id": "c694f426-58eb-433c-ac3d-c5c9173920e2"
+                },
+                {
+                  "group": "left",
+                  "id": "50b5632d-bcab-4368-8ae4-d0aee7079ada"
+                }
+              ]
+            },
+            "id": "process-api",
             "data": {
               "type": "tm.Process",
               "name": "Backend API (FastAPI): перевод средств, история транзакций",
@@ -216,8 +250,90 @@
             },
             "visible": true,
             "shape": "store",
-            "id": "store-postgres",
             "zIndex": 2,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "c952debd-ba33-4c31-a3a7-4e4478b7f441"
+                },
+                {
+                  "group": "right",
+                  "id": "4fe534f2-ffb4-4a49-9d81-72ee4912b8a9"
+                },
+                {
+                  "group": "bottom",
+                  "id": "e72c3015-2a82-4811-8245-7718a3c64d5e"
+                },
+                {
+                  "group": "left",
+                  "id": "7baa6806-a3a8-4e7c-aa82-72c3b58717b7"
+                }
+              ]
+            },
+            "id": "store-postgres",
             "data": {
               "type": "tm.Store",
               "name": "PostgreSQL (счета, транзакции)",
@@ -283,8 +399,90 @@
             },
             "visible": true,
             "shape": "store",
-            "id": "store-redis",
             "zIndex": 2,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "e2d8b6e3-0e87-4af0-873b-c57006a625c2"
+                },
+                {
+                  "group": "right",
+                  "id": "969e07b5-8fe6-4b83-a95c-9d17a676772c"
+                },
+                {
+                  "group": "bottom",
+                  "id": "88cede4a-4c6f-4629-b728-f6b6e3ea61ac"
+                },
+                {
+                  "group": "left",
+                  "id": "2ed77345-36d1-42ab-838b-461e5ca7ef1d"
+                }
+              ]
+            },
+            "id": "store-redis",
             "data": {
               "type": "tm.Store",
               "name": "Redis (кеш / сессии)",
@@ -330,6 +528,148 @@
             }
           },
           {
+            "position": {
+              "x": 160,
+              "y": 460
+            },
+            "size": {
+              "width": 112,
+              "height": 60
+            },
+            "attrs": {
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "63e4c7e1-bc00-4cbb-a87b-8e8021e0bbd6"
+                },
+                {
+                  "group": "right",
+                  "id": "7109bad9-1a30-46f7-b073-06ceca85abc2"
+                },
+                {
+                  "group": "bottom",
+                  "id": "777b55d6-7cbb-4554-854f-379724dc4288"
+                },
+                {
+                  "group": "left",
+                  "id": "85f7727e-8081-4a84-9897-101e69597ff6"
+                }
+              ]
+            },
+            "id": "actor-user",
+            "data": {
+              "type": "tm.Actor",
+              "name": "Пользователь (клиент банка)",
+              "description": "Аутентифицированный клиент, инициирующий переводы средств и просматривающий историю транзакций через веб/мобильное приложение.",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "providesAuthentication": true,
+              "threats": [
+                {
+                  "id": "thr-01",
+                  "title": "Спуфинг пользователя через кражу/подбор токена сессии",
+                  "type": "Spoofing",
+                  "status": "Open",
+                  "severity": "High",
+                  "description": "Атакующий может выдать себя за легитимного пользователя, если токен сессии/JWT недостаточно защищён (слабая энтропия, отсутствие ротации, хранение в localStorage без httpOnly).",
+                  "mitigation": "Использовать httpOnly/secure cookies или короткоживущие JWT с refresh-токенами, строгую политику CORS, MFA для операций перевода средств."
+                },
+                {
+                  "id": "thr-02",
+                  "title": "Репудиация операции перевода",
+                  "type": "Repudiation",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "description": "Пользователь может отрицать факт инициирования перевода при отсутствии неизменяемого журнала аудита с привязкой к идентификатору сессии и времени.",
+                  "mitigation": "Вести подписанный/защищённый от изменения журнал аудита (append-only) со всеми параметрами операции, IP, user-agent, идентификатором сессии."
+                },
+                {
+                  "id": "thr-03",
+                  "title": "Раскрытие учётных данных при передаче по каналу User -> API",
+                  "type": "Information Disclosure",
+                  "status": "Open",
+                  "severity": "High",
+                  "description": "Если TLS не терминируется корректно перед API (в docker-compose порт 8000 проброшен напрямую без reverse-proxy с TLS), учётные данные и токены могут быть перехвачены (MITM).",
+                  "mitigation": "Обязательное принудительное HTTPS (HSTS), терминация TLS на reverse-proxy/ingress, запрет работы API по HTTP в проде."
+                }
+              ]
+            }
+          },
+          {
             "shape": "flow",
             "attrs": {
               "line": {
@@ -343,9 +683,10 @@
                 "strokeDasharray": null
               }
             },
+            "width": 200,
+            "height": 100,
             "zIndex": 10,
             "connector": "smooth",
-            "id": "flow-user-api",
             "data": {
               "type": "tm.Flow",
               "name": "HTTP-запрос: перевод / история транзакций",
@@ -368,11 +709,15 @@
                   "description": "Если HTTPS не обеспечен end-to-end, возможен перехват учётных данных и данных о переводах (MITM) в публичной сети.",
                   "mitigation": "Принудительный TLS (HSTS), валидные сертификаты, отказ от работы по HTTP."
                 }
+              ],
+              "trustBoundaryIds": [
+                "tb-internal-data"
               ]
             },
             "labels": [
               "HTTP-запрос / ответ"
             ],
+            "id": "flow-user-api",
             "source": {
               "cell": "actor-user"
             },
@@ -394,9 +739,10 @@
                 "strokeDasharray": null
               }
             },
+            "width": 200,
+            "height": 100,
             "zIndex": 10,
             "connector": "smooth",
-            "id": "flow-api-postgres",
             "data": {
               "type": "tm.Flow",
               "name": "SQL-запросы к PostgreSQL",
@@ -419,11 +765,13 @@
                   "description": "Если внутренняя сеть docker скомпрометирована (например, через другой контейнер), трафик между API и БД может быть перехвачен или изменён, так как явное шифрование (sslmode) не настроено.",
                   "mitigation": "Включить sslmode=require/verify-full для соединения asyncpg, сегментировать сеть контейнеров."
                 }
-              ]
+              ],
+              "trustBoundaryIds": []
             },
             "labels": [
               "SQL-запрос / результат"
             ],
+            "id": "flow-api-postgres",
             "source": {
               "cell": "process-api"
             },
@@ -445,9 +793,10 @@
                 "strokeDasharray": null
               }
             },
+            "width": 200,
+            "height": 100,
             "zIndex": 10,
             "connector": "smooth",
-            "id": "flow-api-redis",
             "data": {
               "type": "tm.Flow",
               "name": "Чтение/запись кеша и сессий в Redis",
@@ -460,11 +809,13 @@
               "isEncrypted": false,
               "isPublicNetwork": false,
               "protocol": "RESP",
-              "threats": []
+              "threats": [],
+              "trustBoundaryIds": []
             },
             "labels": [
               "GET / SET"
             ],
+            "id": "flow-api-redis",
             "source": {
               "cell": "process-api"
             },
