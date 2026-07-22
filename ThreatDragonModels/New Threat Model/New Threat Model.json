@@ -2,15 +2,481 @@
   "version": "2.6.2",
   "summary": {
     "title": "New Threat Model",
-    "owner": "",
-    "description": "",
+    "owner": "Den",
+    "description": "Threat model for a bank microservice handling funds transfer between accounts and transaction history viewing. Stack: FastAPI backend, PostgreSQL, Redis.",
     "id": 0
   },
   "detail": {
     "contributors": [],
-    "diagrams": [],
-    "diagramTop": 0,
-    "reviewer": "",
-    "threatTop": 0
+    "diagrams": [
+      {
+        "id": 0,
+        "title": "Bank Transfer Service - STRIDE DFD",
+        "diagramType": "STRIDE",
+        "placeholder": "DFD of the bank transfer microservice",
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "version": "2.6.2",
+        "cells": [
+          {
+            "position": {
+              "x": 120,
+              "y": 300
+            },
+            "size": {
+              "width": 900,
+              "height": 420
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "tb-internet-dmz",
+            "zIndex": -2,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "Граница: Интернет / DMZ (публичная сеть)",
+              "description": "Граница между недоверенным клиентом (браузер/приложение пользователя) и опубликованным API.",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false,
+              "crossingFlows": [],
+              "containedElements": []
+            }
+          },
+          {
+            "position": {
+              "x": 320,
+              "y": 340
+            },
+            "size": {
+              "width": 620,
+              "height": 340
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "tb-internal-data",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "Граница: Внутренняя сеть (data tier)",
+              "description": "Граница между backend API и хранилищами данных (PostgreSQL, Redis) внутри docker-сети.",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false,
+              "crossingFlows": [],
+              "containedElements": []
+            }
+          },
+          {
+            "position": {
+              "x": 160,
+              "y": 460
+            },
+            "size": {
+              "width": 112,
+              "height": 60
+            },
+            "attrs": {
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "id": "actor-user",
+            "zIndex": 3,
+            "data": {
+              "type": "tm.Actor",
+              "name": "Пользователь (клиент банка)",
+              "description": "Аутентифицированный клиент, инициирующий переводы средств и просматривающий историю транзакций через веб/мобильное приложение.",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "providesAuthentication": true,
+              "threats": [
+                {
+                  "id": "thr-01",
+                  "title": "Спуфинг пользователя через кражу/подбор токена сессии",
+                  "type": "Spoofing",
+                  "status": "Open",
+                  "severity": "High",
+                  "description": "Атакующий может выдать себя за легитимного пользователя, если токен сессии/JWT недостаточно защищён (слабая энтропия, отсутствие ротации, хранение в localStorage без httpOnly).",
+                  "mitigation": "Использовать httpOnly/secure cookies или короткоживущие JWT с refresh-токенами, строгую политику CORS, MFA для операций перевода средств."
+                },
+                {
+                  "id": "thr-02",
+                  "title": "Репудиация операции перевода",
+                  "type": "Repudiation",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "description": "Пользователь может отрицать факт инициирования перевода при отсутствии неизменяемого журнала аудита с привязкой к идентификатору сессии и времени.",
+                  "mitigation": "Вести подписанный/защищённый от изменения журнал аудита (append-only) со всеми параметрами операции, IP, user-agent, идентификатором сессии."
+                },
+                {
+                  "id": "thr-03",
+                  "title": "Раскрытие учётных данных при передаче по каналу User -> API",
+                  "type": "Information Disclosure",
+                  "status": "Open",
+                  "severity": "High",
+                  "description": "Если TLS не терминируется корректно перед API (в docker-compose порт 8000 проброшен напрямую без reverse-proxy с TLS), учётные данные и токены могут быть перехвачены (MITM).",
+                  "mitigation": "Обязательное принудительное HTTPS (HSTS), терминация TLS на reverse-proxy/ingress, запрет работы API по HTTP в проде."
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 560,
+              "y": 460
+            },
+            "size": {
+              "width": 140,
+              "height": 60
+            },
+            "attrs": {
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "id": "process-api",
+            "zIndex": 1,
+            "data": {
+              "type": "tm.Process",
+              "name": "Backend API (FastAPI): перевод средств, история транзакций",
+              "description": "Основной сервис, реализующий эндпоинты перевода между счетами и просмотра истории транзакций.",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": true,
+              "isWebApplication": true,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "id": "thr-04",
+                  "title": "SQL Injection в crud.py (подтверждено Semgrep)",
+                  "type": "Tampering",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "description": "Semgrep обнаружил конкатенацию строк с непроверенной переменной в SQL-запросе asyncpg (crud.py, строка 66, CWE-89). Позволяет атакующему модифицировать логику запроса и читать/изменять произвольные данные в БД.",
+                  "mitigation": "Использовать только параметризованные запросы asyncpg ($1, $2, ...) или подготовленные выражения (Connection.prepare); запретить конкатенацию строк для построения SQL; добавить unit-тесты на инъекции."
+                },
+                {
+                  "id": "thr-05",
+                  "title": "IDOR на эндпоинтах перевода/истории транзакций",
+                  "type": "Elevation Of Privilege",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "description": "Найдено вручную (пентест): при отсутствии проверки принадлежности счёта авторизованному пользователю, аутентифицированный клиент может подставить чужой account_id/transaction_id и получить доступ к чужим средствам/истории операций.",
+                  "mitigation": "На уровне сервисного слоя проверять, что account_id принадлежит текущему пользователю (по claims из JWT/сессии) перед любой операцией чтения/записи; не полагаться только на фронтенд."
+                },
+                {
+                  "id": "thr-06",
+                  "title": "Отсутствие rate limiting на эндпоинте перевода",
+                  "type": "Denial Of Service",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "description": "Без ограничения частоты запросов возможен исчерпывающий поток запросов к API, ведущий к исчерпанию пула соединений PostgreSQL/Redis и отказу в обслуживании.",
+                  "mitigation": "Ввести rate limiting (per-user, per-IP) на уровне API-gateway или middleware, настроить лимиты пула соединений с алертингом."
+                },
+                {
+                  "id": "thr-07",
+                  "title": "Недостаточная валидация суммы перевода",
+                  "type": "Tampering",
+                  "status": "Open",
+                  "severity": "High",
+                  "description": "Отсутствие строгой валидации входных данных (отрицательные суммы, переполнение, дробные значения вне допустимой точности) может привести к некорректному начислению/списанию средств.",
+                  "mitigation": "Строгая валидация через Pydantic-модели (положительные значения, максимум, фиксированная точность Decimal), проверка бизнес-инвариантов на уровне сервиса и БД (CHECK constraints)."
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 400,
+              "y": 560
+            },
+            "size": {
+              "width": 140,
+              "height": 100
+            },
+            "attrs": {
+              "topLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "id": "store-postgres",
+            "zIndex": 2,
+            "data": {
+              "type": "tm.Store",
+              "name": "PostgreSQL (счета, транзакции)",
+              "description": "Хранилище данных о счетах пользователей и истории транзакций.",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": true,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "id": "thr-08",
+                  "title": "Модификация данных счетов через SQLi",
+                  "type": "Tampering",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "description": "Со стороны хранилища тот же корень проблемы, что и thr-04: успешная SQLi даёт прямой доступ на чтение/запись/удаление данных о счетах и транзакциях.",
+                  "mitigation": "См. thr-04 (параметризованные запросы); дополнительно — принцип наименьших привилегий для роли БД, используемой API (без DROP/ALTER)."
+                },
+                {
+                  "id": "thr-09",
+                  "title": "Слабые/дефолтные учётные данные БД",
+                  "type": "Information Disclosure",
+                  "status": "Open",
+                  "severity": "High",
+                  "description": "В docker-compose.yml используются дефолтные учётные данные (POSTGRES_PASSWORD=postgres, POSTGRES_USER=postgres), порт 5432 проброшен на хост — при доступе к хосту возможен прямой вход в БД.",
+                  "mitigation": "Использовать секреты (Docker/K8s secrets, Vault), сложные уникальные пароли, не пробрасывать порт 5432 наружу без необходимости, ограничить доступ firewall/security group."
+                },
+                {
+                  "id": "thr-10",
+                  "title": "Недостаточное журналирование изменений в БД",
+                  "type": "Repudiation",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "description": "Отсутствие аудиторского журнала на уровне БД (кто/когда изменил баланс счёта) затрудняет расследование инцидентов и опровержение спорных операций.",
+                  "mitigation": "Включить логирование DML-операций для критичных таблиц (pgaudit / триггеры аудита), хранить историю изменений отдельно от оперативных данных."
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 680,
+              "y": 560
+            },
+            "size": {
+              "width": 140,
+              "height": 100
+            },
+            "attrs": {
+              "topLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "id": "store-redis",
+            "zIndex": 2,
+            "data": {
+              "type": "tm.Store",
+              "name": "Redis (кеш / сессии)",
+              "description": "Кеш и/или хранилище сессионных данных для ускорения ответов API.",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": true,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "id": "thr-11",
+                  "title": "Redis без аутентификации, порт проброшен на хост",
+                  "type": "Information Disclosure",
+                  "status": "Open",
+                  "severity": "Critical",
+                  "description": "В docker-compose.yml Redis запущен без requirepass/ACL и с проброшенным на хост портом 6379 — любой, у кого есть сетевой доступ к хосту, может читать закешированные данные и сессионные токены.",
+                  "mitigation": "Включить requirepass/ACL, TLS между API и Redis, убрать проброс порта на хост, оставить Redis только во внутренней docker-сети."
+                },
+                {
+                  "id": "thr-12",
+                  "title": "Подмена/порча кешированных сессионных данных",
+                  "type": "Tampering",
+                  "status": "Open",
+                  "severity": "High",
+                  "description": "Без аутентификации в Redis атакующий может изменить закешированные сессионные данные, что может привести к перехвату сессии другого пользователя.",
+                  "mitigation": "Аутентификация Redis + сетевая изоляция (см. thr-11); подпись/проверка целостности критичных кешированных значений на стороне API."
+                },
+                {
+                  "id": "thr-13",
+                  "title": "Отказ в обслуживании через FLUSHALL/перегрузку Redis",
+                  "type": "Denial Of Service",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "description": "Неаутентифицированный доступ позволяет выполнить деструктивные команды (FLUSHALL) или перегрузить Redis, что приведёт к деградации/отказу сервиса.",
+                  "mitigation": "ACL с запретом опасных команд (rename-command), аутентификация, мониторинг аномальной активности."
+                }
+              ]
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "zIndex": 10,
+            "connector": "smooth",
+            "id": "flow-user-api",
+            "data": {
+              "type": "tm.Flow",
+              "name": "HTTP-запрос: перевод / история транзакций",
+              "description": "Запрос от клиента к API: аутентификация, инициирование перевода, запрос истории.",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": true,
+              "isEncrypted": false,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS (требуется)",
+              "threats": [
+                {
+                  "id": "thr-14",
+                  "title": "Перехват трафика User <-> API",
+                  "type": "Information Disclosure",
+                  "status": "Open",
+                  "severity": "High",
+                  "description": "Если HTTPS не обеспечен end-to-end, возможен перехват учётных данных и данных о переводах (MITM) в публичной сети.",
+                  "mitigation": "Принудительный TLS (HSTS), валидные сертификаты, отказ от работы по HTTP."
+                }
+              ]
+            },
+            "labels": [
+              "HTTP-запрос / ответ"
+            ],
+            "source": {
+              "cell": "actor-user"
+            },
+            "target": {
+              "cell": "process-api"
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "zIndex": 10,
+            "connector": "smooth",
+            "id": "flow-api-postgres",
+            "data": {
+              "type": "tm.Flow",
+              "name": "SQL-запросы к PostgreSQL",
+              "description": "Чтение/запись данных о счетах и транзакциях.",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": true,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "PostgreSQL wire protocol",
+              "threats": [
+                {
+                  "id": "thr-15",
+                  "title": "Незашифрованный трафик API <-> PostgreSQL внутри сети",
+                  "type": "Tampering",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "description": "Если внутренняя сеть docker скомпрометирована (например, через другой контейнер), трафик между API и БД может быть перехвачен или изменён, так как явное шифрование (sslmode) не настроено.",
+                  "mitigation": "Включить sslmode=require/verify-full для соединения asyncpg, сегментировать сеть контейнеров."
+                }
+              ]
+            },
+            "labels": [
+              "SQL-запрос / результат"
+            ],
+            "source": {
+              "cell": "process-api"
+            },
+            "target": {
+              "cell": "store-postgres"
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "zIndex": 10,
+            "connector": "smooth",
+            "id": "flow-api-redis",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Чтение/запись кеша и сессий в Redis",
+              "description": "Кеширование данных и/или хранение сессионных токенов.",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": true,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "RESP",
+              "threats": []
+            },
+            "labels": [
+              "GET / SET"
+            ],
+            "source": {
+              "cell": "process-api"
+            },
+            "target": {
+              "cell": "store-redis"
+            }
+          }
+        ]
+      }
+    ],
+    "diagramTop": 1,
+    "reviewer": "Den",
+    "threatTop": 15
   }
 }
