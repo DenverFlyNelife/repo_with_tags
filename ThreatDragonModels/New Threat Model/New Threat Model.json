@@ -47,13 +47,6 @@
                 "store-redis",
                 "actor-user"
               ]
-            },
-            "tools": {
-              "items": [
-                "boundary",
-                "button-remove"
-              ],
-              "name": null
             }
           },
           {
