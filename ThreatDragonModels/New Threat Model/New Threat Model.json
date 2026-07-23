@@ -47,6 +47,13 @@
                 "store-redis",
                 "actor-user"
               ]
+            },
+            "tools": {
+              "items": [
+                "boundary",
+                "button-remove"
+              ],
+              "name": null
             }
           },
           {
@@ -824,55 +831,7 @@
             "connector": "smooth",
             "data": {
               "type": "tm.Flow",
-              "name": "Data Flow",
-              "description": "",
-              "outOfScope": false,
-              "isTrustBoundary": false,
-              "reasonOutOfScope": "",
-              "hasOpenThreats": false,
-              "isBidirectional": false,
-              "isEncrypted": false,
-              "isPublicNetwork": false,
-              "protocol": "",
-              "threats": [],
-              "trustBoundaryIds": []
-            },
-            "labels": [
-              "Data Flow"
-            ],
-            "id": "b13128c0-7315-489a-9802-4307511a803f",
-            "source": {
-              "cell": "process-api",
-              "port": "9a015b75-fc0f-4296-a16e-6a3ac48801d2"
-            },
-            "target": {
-              "cell": "process-api",
-              "port": "9a015b75-fc0f-4296-a16e-6a3ac48801d2"
-            },
-            "vertices": [],
-            "parent": "process-api"
-          },
-          {
-            "shape": "flow",
-            "attrs": {
-              "line": {
-                "stroke": "#333333",
-                "targetMarker": {
-                  "name": "block"
-                },
-                "sourceMarker": {
-                  "name": ""
-                },
-                "strokeDasharray": null
-              }
-            },
-            "width": 200,
-            "height": 100,
-            "zIndex": 10,
-            "connector": "smooth",
-            "data": {
-              "type": "tm.Flow",
-              "name": "Data Flow",
+              "name": "",
               "description": "",
               "outOfScope": false,
               "isTrustBoundary": false,
@@ -889,7 +848,7 @@
               ]
             },
             "labels": [
-              "Data Flow"
+              ""
             ],
             "id": "a45e344e-a4a0-4267-8368-8c1d785ba206",
             "source": {
@@ -900,7 +859,12 @@
               "x": 700,
               "y": 490
             },
-            "vertices": []
+            "vertices": [
+              {
+                "x": 750,
+                "y": 410
+              }
+            ]
           },
           {
             "shape": "flow",
@@ -949,6 +913,54 @@
             "target": {
               "cell": "store-redis"
             }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              ""
+            ],
+            "id": "b13128c0-7315-489a-9802-4307511a803f",
+            "source": {
+              "cell": "process-api",
+              "port": "9a015b75-fc0f-4296-a16e-6a3ac48801d2"
+            },
+            "target": {
+              "cell": "process-api",
+              "port": "9a015b75-fc0f-4296-a16e-6a3ac48801d2"
+            },
+            "vertices": [],
+            "parent": "process-api"
           }
         ]
       }
