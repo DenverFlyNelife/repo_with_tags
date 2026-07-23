@@ -19,12 +19,17 @@
         "cells": [
           {
             "position": {
-              "x": 30,
-              "y": 55
+              "x": 20,
+              "y": 40
             },
             "size": {
               "width": 1120,
               "height": 760
+            },
+            "attrs": {
+              "label": {
+                "text": "Граница: Интернет / DMZ (публичная сеть)"
+              }
             },
             "visible": true,
             "shape": "trust-boundary-box",
@@ -57,6 +62,11 @@
             "size": {
               "width": 620,
               "height": 650
+            },
+            "attrs": {
+              "label": {
+                "text": "Граница: Внутренняя сеть (data tier)"
+              }
             },
             "visible": true,
             "shape": "trust-boundary-box",
@@ -944,6 +954,7 @@
               ""
             ],
             "id": "b13128c0-7315-489a-9802-4307511a803f",
+            "parent": "process-api",
             "source": {
               "cell": "process-api",
               "port": "9a015b75-fc0f-4296-a16e-6a3ac48801d2"
@@ -952,8 +963,7 @@
               "cell": "process-api",
               "port": "9a015b75-fc0f-4296-a16e-6a3ac48801d2"
             },
-            "vertices": [],
-            "parent": "process-api"
+            "vertices": []
           }
         ]
       }
