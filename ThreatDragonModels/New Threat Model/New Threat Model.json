@@ -19,8 +19,8 @@
         "cells": [
           {
             "position": {
-              "x": 1200,
-              "y": -150
+              "x": 30,
+              "y": 55
             },
             "size": {
               "width": 1120,
@@ -36,17 +36,26 @@
               "description": "Граница между недоверенным клиентом (браузер/приложение пользователя) и опубликованным API.",
               "isTrustBoundary": true,
               "hasOpenThreats": false,
-              "crossingFlows": [],
-              "containedElements": []
+              "crossingFlows": [
+                "a45e344e-a4a0-4267-8368-8c1d785ba206",
+                "flow-api-redis"
+              ],
+              "containedElements": [
+                "tb-internal-data",
+                "process-api",
+                "store-postgres",
+                "store-redis",
+                "actor-user"
+              ]
             }
           },
           {
             "position": {
-              "x": 1230,
-              "y": 110
+              "x": 280,
+              "y": 130.00000000000006
             },
             "size": {
-              "width": 960,
+              "width": 620,
               "height": 650
             },
             "visible": true,
@@ -59,8 +68,16 @@
               "description": "Граница между backend API и хранилищами данных (PostgreSQL, Redis) внутри docker-сети.",
               "isTrustBoundary": true,
               "hasOpenThreats": false,
-              "crossingFlows": [],
-              "containedElements": []
+              "crossingFlows": [
+                "flow-user-api",
+                "a45e344e-a4a0-4267-8368-8c1d785ba206",
+                "flow-api-redis"
+              ],
+              "containedElements": [
+                "process-api",
+                "store-postgres",
+                "store-redis"
+              ]
             }
           },
           {
@@ -225,20 +242,25 @@
           },
           {
             "position": {
-              "x": 360,
-              "y": 620
+              "x": 350,
+              "y": 630
             },
             "size": {
-              "width": 140,
+              "width": 230,
               "height": 100
             },
             "attrs": {
+              "text": {
+                "text": "PostgreSQL (счета, транзакции)"
+              },
               "topLine": {
-                "strokeWidth": 1.5,
+                "stroke": "red",
+                "strokeWidth": 2.5,
                 "strokeDasharray": null
               },
               "bottomLine": {
-                "strokeWidth": 1.5,
+                "stroke": "red",
+                "strokeWidth": 2.5,
                 "strokeDasharray": null
               }
             },
@@ -374,20 +396,25 @@
           },
           {
             "position": {
-              "x": 720,
+              "x": 650,
               "y": 630
             },
             "size": {
-              "width": 140,
+              "width": 230,
               "height": 100
             },
             "attrs": {
+              "text": {
+                "text": "Redis (кеш / сессии)"
+              },
               "topLine": {
-                "strokeWidth": 1.5,
+                "stroke": "red",
+                "strokeWidth": 2.5,
                 "strokeDasharray": null
               },
               "bottomLine": {
-                "strokeWidth": 1.5,
+                "stroke": "red",
+                "strokeWidth": 2.5,
                 "strokeDasharray": null
               }
             },
@@ -523,8 +550,8 @@
           },
           {
             "position": {
-              "x": 72,
-              "y": 459.99999999999994
+              "x": 50,
+              "y": 150
             },
             "size": {
               "width": 200,
@@ -707,7 +734,9 @@
                   "mitigation": "Принудительный TLS (HSTS), валидные сертификаты, отказ от работы по HTTP."
                 }
               ],
-              "trustBoundaryIds": []
+              "trustBoundaryIds": [
+                "tb-internal-data"
+              ]
             },
             "labels": [
               "HTTP-запрос / ответ"
@@ -773,60 +802,6 @@
             },
             "target": {
               "cell": "store-postgres"
-            },
-            "tools": {
-              "items": [
-                "boundary",
-                "button-remove",
-                "vertices",
-                "source-arrowhead",
-                "target-arrowhead"
-              ],
-              "name": null
-            }
-          },
-          {
-            "shape": "flow",
-            "attrs": {
-              "line": {
-                "stroke": "#333333",
-                "targetMarker": {
-                  "name": "block"
-                },
-                "sourceMarker": {
-                  "name": ""
-                },
-                "strokeDasharray": null
-              }
-            },
-            "width": 200,
-            "height": 100,
-            "zIndex": 10,
-            "connector": "smooth",
-            "data": {
-              "type": "tm.Flow",
-              "name": "Чтение/запись кеша и сессий в Redis",
-              "description": "Кеширование данных и/или хранение сессионных токенов.",
-              "outOfScope": false,
-              "isTrustBoundary": false,
-              "reasonOutOfScope": "",
-              "hasOpenThreats": false,
-              "isBidirectional": true,
-              "isEncrypted": false,
-              "isPublicNetwork": false,
-              "protocol": "RESP",
-              "threats": [],
-              "trustBoundaryIds": []
-            },
-            "labels": [
-              "GET / SET"
-            ],
-            "id": "flow-api-redis",
-            "source": {
-              "cell": "process-api"
-            },
-            "target": {
-              "cell": "store-redis"
             }
           },
           {
@@ -908,7 +883,10 @@
               "isPublicNetwork": false,
               "protocol": "",
               "threats": [],
-              "trustBoundaryIds": []
+              "trustBoundaryIds": [
+                "tb-internet-dmz",
+                "tb-internal-data"
+              ]
             },
             "labels": [
               "Data Flow"
@@ -923,6 +901,54 @@
               "y": 490
             },
             "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Чтение/запись кеша и сессий в Redis",
+              "description": "Кеширование данных и/или хранение сессионных токенов.",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": true,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "RESP",
+              "threats": [],
+              "trustBoundaryIds": [
+                "tb-internet-dmz",
+                "tb-internal-data"
+              ]
+            },
+            "labels": [
+              "GET / SET"
+            ],
+            "id": "flow-api-redis",
+            "source": {
+              "x": 700,
+              "y": 490
+            },
+            "target": {
+              "cell": "store-redis"
+            }
           }
         ]
       }
