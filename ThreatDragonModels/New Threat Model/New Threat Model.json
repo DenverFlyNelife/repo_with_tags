@@ -19,12 +19,12 @@
         "cells": [
           {
             "position": {
-              "x": 39.999999999999886,
-              "y": 300
+              "x": 1200,
+              "y": -150
             },
             "size": {
               "width": 1120,
-              "height": 420
+              "height": 760
             },
             "visible": true,
             "shape": "trust-boundary-box",
@@ -37,23 +37,17 @@
               "isTrustBoundary": true,
               "hasOpenThreats": false,
               "crossingFlows": [],
-              "containedElements": [
-                "tb-internal-data",
-                "process-api",
-                "store-postgres",
-                "store-redis",
-                "actor-user"
-              ]
+              "containedElements": []
             }
           },
           {
             "position": {
-              "x": 320,
-              "y": 340
+              "x": 1230,
+              "y": 110
             },
             "size": {
-              "width": 620,
-              "height": 340
+              "width": 960,
+              "height": 650
             },
             "visible": true,
             "shape": "trust-boundary-box",
@@ -65,29 +59,26 @@
               "description": "Граница между backend API и хранилищами данных (PostgreSQL, Redis) внутри docker-сети.",
               "isTrustBoundary": true,
               "hasOpenThreats": false,
-              "crossingFlows": [
-                "flow-user-api"
-              ],
-              "containedElements": [
-                "process-api",
-                "store-postgres",
-                "store-redis"
-              ]
+              "crossingFlows": [],
+              "containedElements": []
             }
           },
           {
             "position": {
-              "x": 560,
-              "y": 460
+              "x": 460,
+              "y": 150
             },
             "size": {
-              "width": 140,
-              "height": 60
+              "width": 330,
+              "height": 370
             },
             "attrs": {
+              "text": {
+                "text": "Backend API (FastAPI): \nперевод средств, история транзакций"
+              },
               "body": {
-                "stroke": "#333333",
-                "strokeWidth": 1.5,
+                "stroke": "red",
+                "strokeWidth": 2.5,
                 "strokeDasharray": null
               }
             },
@@ -179,7 +170,7 @@
             "id": "process-api",
             "data": {
               "type": "tm.Process",
-              "name": "Backend API (FastAPI): перевод средств, история транзакций",
+              "name": "Backend API (FastAPI): \nперевод средств, история транзакций",
               "description": "Основной сервис, реализующий эндпоинты перевода между счетами и просмотра истории транзакций.",
               "outOfScope": false,
               "isTrustBoundary": false,
@@ -227,12 +218,15 @@
                   "mitigation": "Строгая валидация через Pydantic-модели (положительные значения, максимум, фиксированная точность Decimal), проверка бизнес-инвариантов на уровне сервиса и БД (CHECK constraints)."
                 }
               ]
-            }
+            },
+            "children": [
+              "b13128c0-7315-489a-9802-4307511a803f"
+            ]
           },
           {
             "position": {
-              "x": 400,
-              "y": 560
+              "x": 360,
+              "y": 620
             },
             "size": {
               "width": 140,
@@ -380,8 +374,8 @@
           },
           {
             "position": {
-              "x": 680,
-              "y": 560
+              "x": 720,
+              "y": 630
             },
             "size": {
               "width": 140,
@@ -713,9 +707,7 @@
                   "mitigation": "Принудительный TLS (HSTS), валидные сертификаты, отказ от работы по HTTP."
                 }
               ],
-              "trustBoundaryIds": [
-                "tb-internal-data"
-              ]
+              "trustBoundaryIds": []
             },
             "labels": [
               "HTTP-запрос / ответ"
@@ -825,6 +817,101 @@
             "target": {
               "cell": "store-redis"
             }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Data Flow",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              "Data Flow"
+            ],
+            "id": "b13128c0-7315-489a-9802-4307511a803f",
+            "source": {
+              "cell": "process-api",
+              "port": "9a015b75-fc0f-4296-a16e-6a3ac48801d2"
+            },
+            "target": {
+              "cell": "process-api",
+              "port": "9a015b75-fc0f-4296-a16e-6a3ac48801d2"
+            },
+            "vertices": [],
+            "parent": "process-api"
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Data Flow",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              "Data Flow"
+            ],
+            "id": "a45e344e-a4a0-4267-8368-8c1d785ba206",
+            "source": {
+              "cell": "process-api",
+              "port": "0bdc50a0-3fbc-4c1e-847e-ee44a745130e"
+            },
+            "target": {
+              "x": 700,
+              "y": 490
+            },
+            "vertices": []
           }
         ]
       }
